@@ -1,10 +1,8 @@
-// routes/posts.js
 const express = require('express');
 const router = express.Router();
 const Post = require('../models/Post');
 const multer = require('multer');
 const path = require('path');
-const { compare } = require('bcryptjs');
 
 // Multer setup for file uploads
 const storage = multer.diskStorage({
@@ -28,7 +26,7 @@ router.post('/', upload.single('image'), async (req, res) => {
       title,
       text,
       image,
-      dateCreated: new Date(),
+      dateCreated: new Date(), // Ensure dateCreated is a Date object
     });
 
     await post.save();
@@ -54,12 +52,11 @@ router.put('/:id', upload.single('image'), async (req, res) => {
     const postId = req.params.id;
     const { title, text } = req.body;
     const image = req.file ? req.file.filename : null;
-console.log(title+text+"  Inside posts")
-console.log(req.params.id)
+
     const post = await Post.findById(postId);
     if (!post) {
       return res.status(404).send({ message: 'Post not found' });
-      }
+    }
 
     post.title = title;
     post.text = text;
@@ -69,6 +66,22 @@ console.log(req.params.id)
     res.status(200).send(post);
   } catch (error) {
     res.status(400).send({ message: 'Failed to update post', error });
+  }
+});
+
+// Delete a post by ID
+router.delete('/:id', async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).send({ message: 'Post not found' });
+    }
+
+    await post.remove();
+    res.status(200).send({ message: 'Post deleted successfully' });
+  } catch (error) {
+    res.status(400).send({ message: 'Failed to delete post', error });
   }
 });
 
