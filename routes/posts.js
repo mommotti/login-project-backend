@@ -73,6 +73,10 @@ router.put('/:id', upload.single('image'), async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const postId = req.params.id;
+    if (!postId.match(/^[0-9a-fA-F]{24}$/)) { // Check for a valid MongoDB ObjectID
+      return res.status(400).send({ message: 'Invalid post ID' });
+    }
+
     const post = await Post.findById(postId);
     if (!post) {
       return res.status(404).send({ message: 'Post not found' });
@@ -81,7 +85,7 @@ router.delete('/:id', async (req, res) => {
     await post.remove();
     res.status(200).send({ message: 'Post deleted successfully' });
   } catch (error) {
-    res.status(400).send({ message: 'Failed to delete post', error });
+    res.status(500).send({ message: 'Failed to delete post', error });
   }
 });
 
