@@ -74,19 +74,24 @@ router.delete('/:id', async (req, res) => {
   try {
     const postId = req.params.id;
     if (!postId.match(/^[0-9a-fA-F]{24}$/)) { // Check for a valid MongoDB ObjectID
+      console.error(`Invalid post ID: ${postId}`);
       return res.status(400).send({ message: 'Invalid post ID' });
     }
 
     const post = await Post.findById(postId);
     if (!post) {
+      console.error(`Post not found for ID: ${postId}`);
       return res.status(404).send({ message: 'Post not found' });
     }
 
-    await post.remove();
+    await post.deleteOne();
     res.status(200).send({ message: 'Post deleted successfully' });
   } catch (error) {
+    console.error('Error deleting post:', error);
     res.status(500).send({ message: 'Failed to delete post', error });
   }
 });
+
+
 
 module.exports = router;
